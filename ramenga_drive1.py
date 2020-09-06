@@ -5,6 +5,9 @@ import glob
 import os
 import sys
 import random
+import time
+import numpy as np
+import cv2
 
 try:
 	sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -16,7 +19,19 @@ except IndexError:
 
 import carla
 
-actor_list=[] 
+actor_list=[] #create an empty list to store all actors
+
+#define camera image constants
+IM_WIDTH = 640
+IM_HEIGHT = 480
+
+def process_img(image):
+	raw_img = np.array(image.raw_data) #get image raw data which is a single flat array
+	img_shaped = raw_img.reshape((IM_HEIGHT,IM_WIDTH,4)) #Reshape the single flat data into RGBA array
+	img_rgb = img_shaped[:,:,:3] #get rgb only from rgba
+	cv2.imshow("",img_rgb) #openCV display rgb image
+	cv2.waitKey(1) #waits for key event for a delay time
+	return img_rgb/255.0 #return normalized data
 
 try:
 	#create a client object to connect to the sim(server)
@@ -34,12 +49,35 @@ try:
 	print(bp)
 
 	# Get spawn points from the current world map and choose a random one from it
-	spawn_point = random.choice(world.get_map().get_spawn_points()) #object containing a spawn point
+	#spawn_point = random.choice(world.get_map().get_spawn_points()) #object containing a spawn point choose random from list
+	spawn_point = world.get_map().get_spawn_points()[4]
+	#print(spawn_point)
 
 	# Spawn a vehicle at the spawn point
 	vehicle = world.spawn_actor(bp,spawn_point)
 
-	vehicle.set_autopilot(True) #Rule based game engine autopilot (not real autopilot, just like game npc)
+	#vehicle.set_autopilot(True) #Rule based game engine autopilot (not real autopilot, just like game npc)
+
+	vehicle.apply_control(carla.VehicleControl(throttle=3.0,steer=0.0))
+	actor_list.append(vehicle) #append actor to list
+
+	#Set up the camera blueprint
+	camera_bp = blueprint_library.find("sensor.camera.rgb")
+	camera_bp.set_attribute("image_size_x",f"{IM_WIDTH}")
+	camera_bp.set_attribute("image_size_y",f"{IM_HEIGHT}")
+	camera_bp.set_attribute("fov","120")
+
+	#spawn point of camera
+	spawn_point_cam = carla.Transform(carla.Location(x=2.5,z=0.7))
+
+	#Set up the camera sensor (actor) at the spawn point
+	sensor = world.spawn_actor(camera_bp,spawn_point_cam,attach_to=vehicle)
+	actor_list.append(sensor)
+
+	#get information from camera, the lambda function also displays the data
+	sensor.listen(lambda data : process_img(data))
+
+	time.sleep(40)
 
 finally:
 	for actor in actor_list: #Cleanup job
