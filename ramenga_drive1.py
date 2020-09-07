@@ -50,7 +50,7 @@ try:
 
 	# Get spawn points from the current world map and choose a random one from it
 	#spawn_point = random.choice(world.get_map().get_spawn_points()) #object containing a spawn point choose random from list
-	spawn_point = world.get_map().get_spawn_points()[4]
+	spawn_point = world.get_map().get_spawn_points()[8]
 	#print(spawn_point)
 
 	# Spawn a vehicle at the spawn point
@@ -58,7 +58,7 @@ try:
 
 	#vehicle.set_autopilot(True) #Rule based game engine autopilot (not real autopilot, just like game npc)
 
-	vehicle.apply_control(carla.VehicleControl(throttle=3.0,steer=0.0))
+	vehicle.apply_control(carla.VehicleControl(throttle=0.3,steer=0.0))
 	actor_list.append(vehicle) #append actor to list
 
 	#Set up the camera blueprint
@@ -77,7 +77,8 @@ try:
 	#get information from camera, the lambda function also displays the data
 	sensor.listen(lambda data : process_img(data))
 
-	time.sleep(40)
+	time.sleep(20)
+	vehicle.apply_control(carla.VehicleControl(throttle=0.0,steer=0.0))
 
 finally:
 	for actor in actor_list: #Cleanup job
