@@ -12,7 +12,14 @@ import time
 import numpy as np
 import cv2
 
+import argparse
+
+import tensorflow as tf
 from tensorflow import keras
+from keras.models import load_model
+
+model=None #The Keras model
+
 
 try:
 	sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -35,9 +42,24 @@ def process_img(image):
 	img_shaped = raw_img.reshape((IM_HEIGHT,IM_WIDTH,4)) #Reshape the single flat data into RGBA array
 	img_rgb = img_shaped[:,:,:3] #get rgb only from rgba
 	cv2.imshow("",img_rgb) #openCV display rgb image
-	print("imagecaptured")
+	#print("imagecaptured")
 	cv2.waitKey(2) #waits for key event for a delay time
-	return img_rgb/255.0 #return normalized data
+	return img_rgb #return normalized data
+
+def drive():
+	null
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Remote Driving')
+	parser.add_argument(
+    	'model',
+    	type=str,
+    	help='Path to model h5 file. Model should be on the same path.'
+	)
+	args = parser.parse_args()
+
+	#load model
+	model = load_model(args.model) #load model from file 
 
 try:
 	#create a client object to connect to the sim(server)
@@ -51,18 +73,17 @@ try:
 	# The list of all available blueprints is kept in the blueprint library 
 	blueprint_library = world.get_blueprint_library()		#get the blueprint library from world object
 
-	bp = blueprint_library.filter("model3")[0]  #picking a car
+	bp = blueprint_library.filter("model3")[0]  #picking a car, Tesla Model 3
 	print(bp)
 
 	# Get spawn points from the current world map and choose a random one from it
 	#spawn_point = random.choice(world.get_map().get_spawn_points()) #object containing a spawn point choose random from list
-	spawn_point = world.get_map().get_spawn_points()[8]
-	#print(spawn_point)
+	spawn_point = world.get_map().get_spawn_points()[8] #use specific spawn point from the spawn point list
 
 	# Spawn a vehicle at the spawn point
 	vehicle = world.spawn_actor(bp,spawn_point)
 
-	#vehicle.set_autopilot(True) #Rule based game engine autopilot (not real autopilot, just like game npc)
+	#vehicle.set_autopilot(True) #Rule based game engine autopilot (not real autopilot, just like a game npc)
 
 	vehicle.apply_control(carla.VehicleControl(throttle=0.3,steer=0.0))
 	actor_list.append(vehicle) #append actor to list
@@ -79,10 +100,10 @@ try:
 	#Set up the camera sensor (actor) at the spawn point
 	sensor = world.spawn_actor(camera_bp,spawn_point_cam,attach_to=vehicle)
 	actor_list.append(sensor)
-	print("HAY")
+	#print("HAY")
 	#get information from camera, the lambda function also displays the data
 	sensor.listen(lambda data : process_img(data)) #this is a concurrent process that continuously listens
-	print("DOH")
+	#print("DOH")
 
 	time.sleep(20)
 	vehicle.apply_control(carla.VehicleControl(throttle=0.0,steer=0.0))
