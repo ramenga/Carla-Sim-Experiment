@@ -42,8 +42,8 @@ def load_data(args):
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Behavioral Cloning Training Program')
-	parser.add_argument('-d', help='data directory',        dest='data_dir',          type=str,   default='data')
+	parser = argparse.ArgumentParser(description='Behavioral Clone NN')
+	parser.add_argument('-d', help='data directory',dest='data_dir',type=str,default='data')
 	args = parser.parse_args()
 
 	print(args.data_dir)
