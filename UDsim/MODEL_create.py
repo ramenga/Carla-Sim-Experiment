@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 import cv2 
 from tensorflow.keras.applications import ResNet50
+import pathlib
 
 #Paths to Training Data directories
 path = 'H:/CARLA_0.9.10-Pre_Win/TrainingData'
