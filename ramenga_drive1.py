@@ -1,6 +1,6 @@
 #Actors:vehicles,pedestrians,sensors, traffic lights and signs
 #Blueprint:attributes of the actors
-#World: Server running the simulation
+#World on Server running the simulation
 import glob
 import os
 import sys
